@@ -1,5 +1,10 @@
-import mongoose from 'mongoose';
-import { Notification, type INotification } from '../models/notification.model.js';
+import mongoose, { type FilterQuery } from 'mongoose';
+import {
+  Notification,
+  type INotification,
+  type NotificationStatus,
+} from '../models/notification.model.js';
+import { Delivery, type DeliveryChannel } from '../models/delivery.model.js';
 
 export interface PaginatedResult<T> {
   data: T[];
@@ -18,6 +23,70 @@ export class NotificationRepository {
 
   async findById(id: string | mongoose.Types.ObjectId): Promise<INotification | null> {
     return Notification.findById(id);
+  }
+
+  async findWithPagination(
+    filter: { userId?: string; status?: NotificationStatus; channel?: DeliveryChannel },
+    pagination: { page: number; limit: number; skip: number },
+  ): Promise<PaginatedResult<INotification>> {
+    const query: FilterQuery<INotification> = {};
+    if (filter.userId) {
+      query.userId = filter.userId;
+    }
+    if (filter.status) {
+      query.status = filter.status;
+    }
+    if (filter.channel) {
+      query._id = {
+        $in: await Delivery.distinct('notificationId', { channel: filter.channel }),
+      };
+    }
+
+    const [data, total] = await Promise.all([
+      Notification.find(query)
+        .sort({ createdAt: -1 })
+        .skip(pagination.skip)
+        .limit(pagination.limit)
+        .lean(),
+      Notification.countDocuments(query),
+    ]);
+
+    return {
+      data: data as unknown as INotification[],
+      meta: {
+        page: pagination.page,
+        limit: pagination.limit,
+        total,
+        totalPages: Math.ceil(total / pagination.limit),
+      },
+    };
+  }
+
+  async update(
+    id: string | mongoose.Types.ObjectId,
+    data: Partial<INotification>,
+  ): Promise<INotification | null> {
+    return Notification.findByIdAndUpdate(id, { $set: data }, { new: true });
+  }
+
+  async updateStatus(
+    id: string | mongoose.Types.ObjectId,
+    status: NotificationStatus,
+    allowedFrom: NotificationStatus[] = ['pending', 'processing'],
+  ): Promise<INotification | null> {
+    return Notification.findOneAndUpdate(
+      { _id: id, status: { $in: allowedFrom } },
+      { $set: { status } },
+      { new: true },
+    );
+  }
+
+  async countByStatus(status: NotificationStatus): Promise<number> {
+    return Notification.countDocuments({ status });
+  }
+
+  async countByChannel(channel: DeliveryChannel): Promise<number> {
+    return Delivery.countDocuments({ channel });
   }
 
   async findUnreadByUser(

@@ -33,7 +33,7 @@ export async function cancelNotification(req: Request, res: Response, _next: Nex
   );
 }
 
-export async function getNotificationStats(req: Request, res: Response, _next: NextFunction): Promise<void> {
+export async function getNotificationStats(_req: Request, res: Response, _next: NextFunction): Promise<void> {
   const stats = await notificationService.getStats();
   res.status(HTTP_STATUS.OK).json(
     sendSuccess('Notification stats retrieved successfully', stats),

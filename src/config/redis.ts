@@ -1,9 +1,9 @@
-import Redis from 'ioredis';
+import Redis, { type RedisOptions } from 'ioredis';
 import { env } from './env.js';
 import { logger } from './logger.js';
 
 function createRedisClient(label: string): Redis {
-  const connectionOptions: Redis.RedisOptions = {
+  const connectionOptions: RedisOptions = {
     host: env.REDIS_HOST,
     port: env.REDIS_PORT,
     password: env.REDIS_PASSWORD || undefined,
@@ -64,10 +64,22 @@ export const redisClients = {
   pubsub: createRedisClient('pubsub'),
 };
 
+async function waitForRedisReady(client: Redis): Promise<void> {
+  if (client.status === 'ready') {
+    return;
+  }
+  await new Promise<void>((resolve) => {
+    client.once('ready', () => resolve());
+  });
+}
+
 export async function connectRedis(): Promise<void> {
   const connections = Object.entries(redisClients).map(async ([label, client]) => {
     try {
-      await client.connect();
+      if (client.status === 'wait') {
+        await client.connect();
+      }
+      await waitForRedisReady(client);
       logger.info({ component: 'redis', label }, `Redis client ${label} connected`);
     } catch (error) {
       logger.fatal({ component: 'redis', label, err: error }, `Failed to connect Redis client ${label}`);

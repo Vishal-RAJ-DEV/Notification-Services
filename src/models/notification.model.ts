@@ -1,7 +1,12 @@
 import mongoose, { Schema, type Document } from 'mongoose';
 
 export type NotificationChannel = 'push' | 'email' | 'sms';
-export type NotificationStatus = 'pending' | 'processing' | 'sent' | 'failed';
+export type NotificationStatus =
+  | 'pending'
+  | 'processing'
+  | 'completed'
+  | 'partially_failed'
+  | 'failed';
 export type NotificationPriority = 'high' | 'normal' | 'low';
 
 export interface INotification extends Document {
@@ -60,7 +65,7 @@ const NotificationSchema = new Schema<INotification>(
     },
     status: {
       type: String,
-      enum: ['pending', 'processing', 'sent', 'failed'],
+      enum: ['pending', 'processing', 'completed', 'partially_failed', 'failed'],
       default: 'pending',
     },
     readAt: {

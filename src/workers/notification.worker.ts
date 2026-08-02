@@ -4,6 +4,7 @@ import { env } from '../config/env.js';
 import { logger } from '../config/logger.js';
 import { QUEUE_NAMES } from '../constants/index.js';
 import { processNotificationJob } from '../jobs/notification.job.js';
+import type { NotificationJobData } from '../queues/notification.queue.js';
 
 const workerOptions: WorkerOptions = {
   connection: redisClients.worker,
@@ -25,14 +26,14 @@ class NotificationWorker {
   public readonly worker: Worker;
 
   constructor() {
-    this.worker = new Worker(
+    this.worker = new Worker<NotificationJobData>(
       QUEUE_NAMES.NOTIFICATION,
       async (job) => {
         logger.info(
           { component: 'worker', jobId: job.id, attempt: job.attemptsMade },
-          'Worker processing notification job',
+          'Worker processing notification delivery job',
         );
-        return processNotificationJob(job.data);
+        return processNotificationJob(job);
       },
       workerOptions,
     );

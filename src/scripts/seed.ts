@@ -13,7 +13,7 @@ const samples: Array<{
   body: string;
   data: { deepLink: string } | null;
   channels: Array<'push' | 'email' | 'sms'>;
-  status: 'pending' | 'sent' | 'failed';
+  status: 'pending' | 'completed' | 'failed';
   priority: 'high' | 'normal' | 'low';
 }> = [
   {
@@ -23,7 +23,7 @@ const samples: Array<{
     body: 'Thank you for joining! We are thrilled to have you.',
     data: { deepLink: '/dashboard' },
     channels: ['push', 'email'],
-    status: 'sent',
+    status: 'completed',
     priority: 'high',
   },
   {
@@ -63,7 +63,7 @@ const samples: Array<{
     body: 'Check out our new dark mode and export tools.',
     data: { deepLink: '/changelog' },
     channels: ['push'],
-    status: 'sent',
+    status: 'completed',
     priority: 'normal',
   },
 ];
@@ -81,7 +81,7 @@ async function seed(): Promise<void> {
       const delivery = await deliveryRepository.create({
         notificationId: created._id,
         channel,
-        status: note.status === 'sent' ? 'sent' : 'queued',
+        status: note.status === 'completed' ? 'sent' : 'queued',
         attempts: 0,
       });
       console.log(`  \u2514\u2500 delivery (${channel}) \u2014 ${delivery._id}`);

@@ -45,11 +45,53 @@ export class DeliveryRepository {
     };
   }
 
+  async findByNotificationId(
+    notificationId: string | mongoose.Types.ObjectId,
+  ): Promise<IDelivery[]> {
+    return Delivery.find({ notificationId });
+  }
+
   async findByNotificationAndChannel(
     notificationId: string | mongoose.Types.ObjectId,
     channel: DeliveryChannel,
   ): Promise<IDelivery | null> {
     return Delivery.findOne({ notificationId, channel });
+  }
+
+  async markAsSent(
+    id: string | mongoose.Types.ObjectId,
+    providerMessageId: string,
+  ): Promise<IDelivery | null> {
+    return this.updateStatus(id, {
+      status: 'sent',
+      providerMessageId,
+      sentAt: new Date(),
+    });
+  }
+
+  async markAsFailed(
+    id: string | mongoose.Types.ObjectId,
+    lastError: string,
+    nextRetryAt?: Date,
+  ): Promise<IDelivery | null> {
+    return this.updateStatus(id, { status: 'failed', lastError, nextRetryAt });
+  }
+
+  async markAsDeadLetter(
+    id: string | mongoose.Types.ObjectId,
+    lastError: string,
+  ): Promise<IDelivery | null> {
+    return this.updateStatus(id, { status: 'dead', lastError });
+  }
+
+  async incrementRetryCount(
+    id: string | mongoose.Types.ObjectId,
+  ): Promise<IDelivery | null> {
+    return Delivery.findByIdAndUpdate(id, { $inc: { attempts: 1 } }, { new: true });
+  }
+
+  async countByChannel(channel: DeliveryChannel): Promise<number> {
+    return Delivery.countDocuments({ channel });
   }
 }
 

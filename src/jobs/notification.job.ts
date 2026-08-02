@@ -1,54 +1,80 @@
+import type { Job } from 'bullmq';
 import { logger } from '../config/logger.js';
-import { notificationRepository } from '../repositories/notification.repository.js';
+import { deliveryRepository } from '../repositories/delivery.repository.js';
+import { notificationService } from '../services/notification.service.js';
 import { providerFactory } from '../providers/index.js';
+import { notificationEventEmitter } from '../events/index.js';
 import type { NotificationJobData } from '../queues/notification.queue.js';
 import type { ProviderResponse } from '../types/index.js';
 
-export async function processNotificationJob(data: NotificationJobData): Promise<ProviderResponse> {
-  const { notificationId, channel, recipient, subject, body, metadata } = data;
+export async function processNotificationJob(
+  job: Job<NotificationJobData>,
+): Promise<ProviderResponse> {
+  const { notificationId, deliveryId, channel, userId, subject, body, metadata } = job.data;
+
+  const delivery = await deliveryRepository.findById(deliveryId);
+  if (!delivery) {
+    logger.error({ deliveryId }, 'Delivery not found, aborting job');
+    throw new Error(`Delivery ${deliveryId} not found`);
+  }
+
+  if (delivery.status === 'sent' || delivery.status === 'dead') {
+    logger.info(
+      { deliveryId, status: delivery.status },
+      'Delivery already in terminal state, skipping',
+    );
+    return { success: true, messageId: delivery.providerMessageId ?? undefined };
+  }
 
   logger.info(
-    { notificationId, channel, recipient },
-    'Processing notification job',
+    { notificationId, deliveryId, channel, attempt: job.attemptsMade + 1 },
+    'Processing notification delivery',
   );
 
   const provider = providerFactory.getProvider(channel);
-  const result = await provider.send({
-    to: recipient,
-    subject,
-    body,
-    metadata,
-  });
+  const result = await provider.send({ to: userId, subject, body, metadata });
 
   if (result.success) {
-    await notificationRepository.markAsSent(notificationId, result.messageId ?? '');
+    await deliveryRepository.markAsSent(deliveryId, result.messageId ?? '');
+    notificationEventEmitter.emitSent({
+      notificationId,
+      deliveryId,
+      channel,
+      userId,
+      messageId: result.messageId ?? '',
+    });
+    await notificationService.resolveNotificationStatus(notificationId);
     logger.info(
-      { notificationId, messageId: result.messageId },
-      'Notification sent successfully',
+      { notificationId, deliveryId, messageId: result.messageId },
+      'Delivery sent successfully',
     );
-  } else {
-    const notification = await notificationRepository.findById(notificationId);
-    if (notification) {
-      const newRetryCount = (notification.retryCount || 0) + 1;
-      if (newRetryCount >= notification.maxRetries) {
-        await notificationRepository.markAsDeadLetter(
-          notificationId,
-          result.error ?? 'Max retries exceeded',
-        );
-        logger.error(
-          { notificationId, error: result.error },
-          'Notification moved to dead-letter queue after max retries',
-        );
-      } else {
-        await notificationRepository.incrementRetryCount(notificationId);
-        await notificationRepository.markAsFailed(notificationId, result.error ?? 'Unknown error');
-        logger.warn(
-          { notificationId, retryCount: newRetryCount, error: result.error },
-          'Notification failed, will retry',
-        );
-      }
-    }
+    return result;
   }
 
-  return result;
+  const error = result.error ?? 'Unknown provider error';
+  const isLastAttempt = job.attemptsMade + 1 >= (job.opts.attempts ?? 1);
+
+  if (isLastAttempt) {
+    await deliveryRepository.markAsDeadLetter(deliveryId, error);
+    notificationEventEmitter.emitDeadLetter({ notificationId, deliveryId, channel, userId, error });
+    await notificationService.resolveNotificationStatus(notificationId);
+    logger.error({ notificationId, deliveryId, error }, 'Delivery moved to dead-letter');
+    return result;
+  }
+
+  const retryDelay = Math.min(2000 * 2 ** job.attemptsMade, 30000);
+  await deliveryRepository.markAsFailed(deliveryId, error, new Date(Date.now() + retryDelay));
+  notificationEventEmitter.emitRetrying({
+    notificationId,
+    deliveryId,
+    channel,
+    userId,
+    attempt: job.attemptsMade + 1,
+  });
+  logger.warn(
+    { notificationId, deliveryId, attempt: job.attemptsMade + 1, error },
+    'Delivery failed, will retry',
+  );
+
+  throw new Error(error);
 }

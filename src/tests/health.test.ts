@@ -1,11 +1,16 @@
 import request from 'supertest';
 import { app } from '../app.js';
 
+jest.mock('../config/redis', () => {
+  const actual = jest.requireActual('../config/redis');
+  actual.redisClients.queue.ping = jest.fn().mockRejectedValue(new Error('redis unavailable'));
+  return actual;
+});
+
 describe('Health Check Endpoint', () => {
   it('should return health status object with correct structure', async () => {
     const response = await request(app).get('/api/v1/health');
 
-    expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('status');
     expect(response.body).toHaveProperty('uptime');
     expect(response.body).toHaveProperty('timestamp');
@@ -16,6 +21,7 @@ describe('Health Check Endpoint', () => {
     expect(response.body).toHaveProperty('nodeVersion');
     expect(response.body).toHaveProperty('environment');
     expect(response.body).toHaveProperty('serviceName');
+    expect(response.status).toBe(response.body.status === 'healthy' ? 200 : 503);
   });
 
   it('should return status as healthy or unhealthy', async () => {

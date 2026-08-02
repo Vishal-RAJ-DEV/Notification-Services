@@ -7,8 +7,9 @@ import type { NotificationChannel } from '../types/index.js';
 
 export interface NotificationJobData {
   notificationId: string;
+  deliveryId: string;
   channel: NotificationChannel;
-  recipient: string;
+  userId: string;
   subject?: string;
   body: string;
   metadata?: Record<string, unknown>;
@@ -85,15 +86,22 @@ class NotificationQueue {
 
   async add(
     data: NotificationJobData,
-    opts?: { priority?: number; delay?: number },
+    opts?: { jobId?: string; priority?: number; delay?: number },
   ): Promise<string> {
     const job = await this.queue.add(JOB_NAMES.SEND_NOTIFICATION, data, {
+      jobId: opts?.jobId,
       priority: opts?.priority ?? 0,
       delay: opts?.delay ?? 0,
     });
     logger.info(
-      { component: 'queue', jobId: job.id, channel: data.channel, recipient: data.recipient },
-      'Notification job added to queue',
+      {
+        component: 'queue',
+        jobId: job.id,
+        deliveryId: data.deliveryId,
+        channel: data.channel,
+        userId: data.userId,
+      },
+      'Notification delivery job added to queue',
     );
     return job.id ?? '';
   }

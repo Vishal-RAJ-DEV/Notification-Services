@@ -17,10 +17,10 @@ export const JOB_NAMES = {
 
 export const NOTIFICATION_STATUS = {
   PENDING: 'pending',
-  SENT: 'sent',
+  PROCESSING: 'processing',
+  COMPLETED: 'completed',
+  PARTIALLY_FAILED: 'partially_failed',
   FAILED: 'failed',
-  RETRYING: 'retrying',
-  DLQ: 'dead-letter',
 } as const;
 
 export const NOTIFICATION_CHANNEL = {

@@ -3,10 +3,12 @@ import type { Config } from 'jest';
 const config: Config = {
   preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'node',
+  setupFiles: ['<rootDir>/jest.setup.ts'],
   roots: ['<rootDir>/src/tests'],
   testMatch: ['**/*.test.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   transform: {
     '^.+\\.ts$': [
@@ -19,7 +21,7 @@ const config: Config = {
   },
   extensionsToTreatAsEsm: ['.ts'],
   collectCoverageFrom: ['src/**/*.ts', '!src/tests/**', '!src/types/**'],
-  coverageThresholds: {
+  coverageThreshold: {
     global: {
       branches: 70,
       functions: 70,
