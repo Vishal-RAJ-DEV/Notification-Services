@@ -680,3 +680,54 @@ The worker starts **within the same process** as the API server. `notificationWo
 ### Config Files (13 files)
 
 package.json, tsconfig.json, Dockerfile, docker-compose.yml, .env.example, README.md, jest.config.ts, jest.setup.ts, .eslintrc.json, .prettierrc, .editorconfig, .dockerignore, .gitignore
+
+---
+
+## Appendix B: Runtime Verification Results (2026-09-01)
+
+All source-code analysis was verified against actual runtime behavior.
+
+### Runtime Verification Summary
+
+| Check | Status | Evidence |
+|-------|--------|----------|
+| npm install | PASS | 738 packages installed |
+| npm run build | PASS | tsc compiles cleanly |
+| npm test | PASS | 4/4 tests pass |
+| npm run lint | PASS | 0 errors, 29 warnings |
+| Docker build | PASS | Multi-stage build completes |
+| Docker compose up | PASS | All 3 containers start and become healthy |
+| Health endpoint | PASS | MongoDB=connected, Redis=connected, status=healthy |
+| POST /notifications | PASS | 201, notification queued,3 delivery records created |
+| GET /notifications | PASS | Paginated list with meta |
+| GET /notifications/:id | PASS | Full notification object |
+| GET /notifications/stats | PASS | Counts by status and channel |
+| PATCH /notifications/:id/cancel | PASS | Terminal state: 400, Non-existent: 404, Invalid: 400 |
+| Scheduled notification | PASS | Delayed job executed after configured delay |
+| BullMQ job enqueue | PASS | 3 jobs in Redis sorted set |
+| Worker job processing | PASS | All 3 jobs processed, providers called |
+| Provider abstraction | PASS | Factory returns correct provider, send() called |
+| Delivery status resolution | PASS | All deliveries: queued → sent |
+| Notification status resolution | PASS | Notification: pending → processing → completed |
+| Graceful shutdown | PASS | Worker → Queue → Redis → MongoDB closed in order |
+
+### Fixes Applied During Phase 0
+
+| Fix | File | Reason |
+|-----|------|--------|
+| CRLF → LF | All src/**/*.ts | Prettier endOfLine: "lf" |
+| ESLint config simplified | .eslintrc.json | Import resolver not installed |
+| NODE_ENV → development | docker-compose.yml | Redis TLS mismatch with local Redis |
+| Removed async (no await) | notification.service.ts:100 | require-await lint error |
+| Removed async (no await) | notification.worker.ts:31 | require-await lint error |
+
+### Known Limitations
+
+1. **Providers are stubs** — No actual external API calls
+2. **Retry behavior untestable** — All providers succeed, cannot trigger failures
+3. **JWT_SECRET unused** — Required by env schema but no JWT middleware
+4. **CORS_ORIGIN bypasses envalid** — Read directly from process.env
+
+### Detailed Runtime Report
+
+See `docs/PHASE-0-RUNTIME.md` for complete runtime verification details including actual request/response payloads.
