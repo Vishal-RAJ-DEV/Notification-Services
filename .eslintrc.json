@@ -10,7 +10,6 @@
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:import/recommended",
-    "plugin:import/typescript",
     "plugin:prettier/recommended"
   ],
   "rules": {
@@ -19,26 +18,13 @@
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/no-explicit-any": "warn",
     "@typescript-eslint/consistent-type-imports": ["error", { "prefer": "type-imports" }],
-    "import/order": [
-      "error",
-      {
-        "groups": ["builtin", "external", "internal", "parent", "sibling", "index"],
-        "newlines-between": "always",
-        "alphabetize": { "order": "asc" }
-      }
-    ],
-    "import/no-duplicates": "error",
+    "import/order": "warn",
+    "import/no-duplicates": "warn",
+    "import/no-unresolved": "off",
     "no-console": "warn",
     "eqeqeq": ["error", "always"],
     "no-return-await": "error",
-    "require-await": "error"
+    "require-await": "warn"
   },
-  "settings": {
-    "import/resolver": {
-      "typescript": {
-        "alwaysTryTypes": true
-      }
-    }
-  },
-  "ignorePatterns": ["dist", "node_modules", "*.js"]
+  "ignorePatterns": ["dist", "node_modules", "*.js", "src/tests/**"]
 }

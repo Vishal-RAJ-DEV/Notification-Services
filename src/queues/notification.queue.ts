@@ -77,10 +77,7 @@ class NotificationQueue {
     });
 
     this.events.on('active', ({ jobId }) => {
-      logger.debug(
-        { component: 'queue', queue: QUEUE_NAMES.NOTIFICATION, jobId },
-        'Job is active',
-      );
+      logger.debug({ component: 'queue', queue: QUEUE_NAMES.NOTIFICATION, jobId }, 'Job is active');
     });
   }
 

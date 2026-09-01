@@ -9,7 +9,10 @@ export const env = cleanEnv(process.env, {
   REDIS_PORT: port({ default: 6379 }),
   REDIS_PASSWORD: str({ default: '' }),
   JWT_SECRET: str({ desc: 'Secret key for JWT token signing' }),
-  LOG_LEVEL: str({ choices: ['fatal', 'error', 'warn', 'info', 'debug', 'trace'], default: 'info' }),
+  LOG_LEVEL: str({
+    choices: ['fatal', 'error', 'warn', 'info', 'debug', 'trace'],
+    default: 'info',
+  }),
   QUEUE_PREFIX: str({ default: 'notifications' }),
   SERVICE_NAME: str({ default: 'notification-service' }),
 });

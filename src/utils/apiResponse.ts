@@ -10,7 +10,11 @@ export interface ApiResponseBody<T = unknown> {
   };
 }
 
-export function sendSuccess<T>(message: string, data?: T, meta?: ApiResponseBody['meta']): ApiResponseBody<T> {
+export function sendSuccess<T>(
+  message: string,
+  data?: T,
+  meta?: ApiResponseBody['meta'],
+): ApiResponseBody<T> {
   return {
     success: true,
     message,

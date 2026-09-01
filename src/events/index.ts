@@ -48,7 +48,10 @@ class NotificationEventEmitter extends EventEmitter {
   }
 
   emitCompleted(data: { notificationId: string }): void {
-    logger.info({ event: NotificationEvents.COMPLETED, ...data }, 'Notification completed event emitted');
+    logger.info(
+      { event: NotificationEvents.COMPLETED, ...data },
+      'Notification completed event emitted',
+    );
     this.emit(NotificationEvents.COMPLETED, data);
   }
 
@@ -61,7 +64,10 @@ class NotificationEventEmitter extends EventEmitter {
   }
 
   emitFailed(data: { notificationId: string }): void {
-    logger.error({ event: NotificationEvents.FAILED, ...data }, 'Notification failed event emitted');
+    logger.error(
+      { event: NotificationEvents.FAILED, ...data },
+      'Notification failed event emitted',
+    );
     this.emit(NotificationEvents.FAILED, data);
   }
 }

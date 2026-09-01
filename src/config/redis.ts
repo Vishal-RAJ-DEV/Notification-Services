@@ -82,7 +82,10 @@ export async function connectRedis(): Promise<void> {
       await waitForRedisReady(client);
       logger.info({ component: 'redis', label }, `Redis client ${label} connected`);
     } catch (error) {
-      logger.fatal({ component: 'redis', label, err: error }, `Failed to connect Redis client ${label}`);
+      logger.fatal(
+        { component: 'redis', label, err: error },
+        `Failed to connect Redis client ${label}`,
+      );
       throw error;
     }
   });
@@ -96,7 +99,10 @@ export async function disconnectRedis(): Promise<void> {
       await client.quit();
       logger.info({ component: 'redis', label }, `Redis client ${label} disconnected`);
     } catch (error) {
-      logger.error({ component: 'redis', label, err: error }, `Error disconnecting Redis client ${label}`);
+      logger.error(
+        { component: 'redis', label, err: error },
+        `Error disconnecting Redis client ${label}`,
+      );
     }
   });
 

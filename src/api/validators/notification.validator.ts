@@ -9,10 +9,7 @@ export const sendNotificationSchema = z.object({
     .min(1, 'At least one channel is required'),
   type: z.string().min(1, 'Type is required').max(100, 'Type must be at most 100 characters'),
   title: z.string().min(1, 'Title is required').max(500, 'Title must be at most 500 characters'),
-  subject: z
-    .string()
-    .max(500, 'Subject must be at most 500 characters')
-    .optional(),
+  subject: z.string().max(500, 'Subject must be at most 500 characters').optional(),
   body: z.string().min(1, 'Body is required').max(10000, 'Body must be at most 10000 characters'),
   priority: z
     .enum(['high', 'normal', 'low'], {
@@ -20,10 +17,7 @@ export const sendNotificationSchema = z.object({
     })
     .optional()
     .default('normal'),
-  scheduledAt: z
-    .string()
-    .datetime('ScheduledAt must be a valid ISO datetime')
-    .optional(),
+  scheduledAt: z.string().datetime('ScheduledAt must be a valid ISO datetime').optional(),
   metadata: z.record(z.unknown()).optional(),
 });
 
@@ -33,9 +27,7 @@ export const notificationIdSchema = z.object({
 
 export const listNotificationsSchema = z.object({
   userId: z.string().optional(),
-  status: z
-    .enum(['pending', 'processing', 'completed', 'partially_failed', 'failed'])
-    .optional(),
+  status: z.enum(['pending', 'processing', 'completed', 'partially_failed', 'failed']).optional(),
   channel: z.enum(['email', 'sms', 'push']).optional(),
   page: z.string().optional(),
   limit: z.string().optional(),

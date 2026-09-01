@@ -1,4 +1,5 @@
-import mongoose, { type FilterQuery } from 'mongoose';
+import type mongoose from 'mongoose';
+import { type FilterQuery } from 'mongoose';
 import {
   Notification,
   type INotification,
@@ -98,11 +99,7 @@ export class NotificationRepository {
     const filter = { userId, readAt: null };
 
     const [data, total] = await Promise.all([
-      Notification.find(filter)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
+      Notification.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
       Notification.countDocuments(filter),
     ]);
 
@@ -126,11 +123,7 @@ export class NotificationRepository {
     const filter = { userId };
 
     const [data, total] = await Promise.all([
-      Notification.find(filter)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
+      Notification.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
       Notification.countDocuments(filter),
     ]);
 

@@ -23,9 +23,7 @@ export function rateLimiter(options: RateLimiterOptions) {
     record.count++;
 
     if (record.count > options.maxRequests) {
-      next(
-        new AppError('Too many requests, please try again later', 429, 'RATE_LIMIT_EXCEEDED'),
-      );
+      next(new AppError('Too many requests, please try again later', 429, 'RATE_LIMIT_EXCEEDED'));
       return;
     }
 

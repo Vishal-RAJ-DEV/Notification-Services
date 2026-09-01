@@ -1,10 +1,6 @@
 export type NotificationChannel = 'email' | 'sms' | 'push';
 export type NotificationStatus =
-  | 'pending'
-  | 'processing'
-  | 'completed'
-  | 'partially_failed'
-  | 'failed';
+  'pending' | 'processing' | 'completed' | 'partially_failed' | 'failed';
 
 export interface SendNotificationPayload {
   userId: string;

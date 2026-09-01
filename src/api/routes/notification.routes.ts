@@ -26,22 +26,11 @@ router.post(
   asyncHandler(sendNotification),
 );
 
-router.get(
-  '/stats',
-  asyncHandler(getNotificationStats),
-);
+router.get('/stats', asyncHandler(getNotificationStats));
 
-router.get(
-  '/:id',
-  validate(notificationIdSchema, 'params'),
-  asyncHandler(getNotification),
-);
+router.get('/:id', validate(notificationIdSchema, 'params'), asyncHandler(getNotification));
 
-router.get(
-  '/',
-  validate(listNotificationsSchema, 'query'),
-  asyncHandler(listNotifications),
-);
+router.get('/', validate(listNotificationsSchema, 'query'), asyncHandler(listNotifications));
 
 router.patch(
   '/:id/cancel',

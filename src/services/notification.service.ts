@@ -97,7 +97,7 @@ export class NotificationService {
     return notification;
   }
 
-  async list(
+  list(
     filter: ListNotificationsInput,
     pagination: PaginationParams,
   ): Promise<{ data: INotification[]; meta: PaginationMeta }> {

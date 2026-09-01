@@ -1,9 +1,9 @@
-import type { NotificationProvider } from './interfaces/provider.interface.js';
 import type { NotificationChannel } from '../types/index.js';
+import { ValidationError } from '../errors/ValidationError.js';
+import type { NotificationProvider } from './interfaces/provider.interface.js';
 import { EmailProvider } from './email/email.provider.js';
 import { SmsProvider } from './sms/sms.provider.js';
 import { PushProvider } from './push/push.provider.js';
-import { ValidationError } from '../errors/ValidationError.js';
 
 class ProviderFactory {
   private providers: Map<NotificationChannel, NotificationProvider>;
@@ -22,9 +22,7 @@ class ProviderFactory {
   getProvider(channel: NotificationChannel): NotificationProvider {
     const provider = this.providers.get(channel);
     if (!provider) {
-      throw new ValidationError(
-        { channel: [`No provider registered for channel: ${channel}`] },
-      );
+      throw new ValidationError({ channel: [`No provider registered for channel: ${channel}`] });
     }
     return provider;
   }

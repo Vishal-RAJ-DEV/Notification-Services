@@ -1,8 +1,7 @@
-import type { NotificationProvider } from '../interfaces/provider.interface.js';
-import type { SendOptions } from '../interfaces/provider.interface.js';
+import { v4 as uuidv4 } from 'uuid';
+import type { NotificationProvider, SendOptions } from '../interfaces/provider.interface.js';
 import type { ProviderResponse } from '../../types/index.js';
 import { logger } from '../../config/logger.js';
-import { v4 as uuidv4 } from 'uuid';
 
 export class SmsProvider implements NotificationProvider {
   readonly name = 'sms';

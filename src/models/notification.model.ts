@@ -2,11 +2,7 @@ import mongoose, { Schema, type Document } from 'mongoose';
 
 export type NotificationChannel = 'push' | 'email' | 'sms';
 export type NotificationStatus =
-  | 'pending'
-  | 'processing'
-  | 'completed'
-  | 'partially_failed'
-  | 'failed';
+  'pending' | 'processing' | 'completed' | 'partially_failed' | 'failed';
 export type NotificationPriority = 'high' | 'normal' | 'low';
 
 export interface INotification extends Document {

@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import type mongoose from 'mongoose';
 import { Delivery, type IDelivery, type DeliveryChannel } from '../models/delivery.model.js';
 import type { PaginatedResult } from './notification.repository.js';
 
@@ -13,7 +13,12 @@ export class DeliveryRepository {
 
   async updateStatus(
     id: string | mongoose.Types.ObjectId,
-    statusFields: Partial<Pick<IDelivery, 'status' | 'attempts' | 'lastError' | 'providerMessageId' | 'nextRetryAt' | 'sentAt'>>,
+    statusFields: Partial<
+      Pick<
+        IDelivery,
+        'status' | 'attempts' | 'lastError' | 'providerMessageId' | 'nextRetryAt' | 'sentAt'
+      >
+    >,
   ): Promise<IDelivery | null> {
     return Delivery.findByIdAndUpdate(id, { $set: statusFields }, { new: true });
   }
@@ -26,11 +31,7 @@ export class DeliveryRepository {
     const filter = { status: 'dead' as const };
 
     const [data, total] = await Promise.all([
-      Delivery.find(filter)
-        .sort({ updatedAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
+      Delivery.find(filter).sort({ updatedAt: -1 }).skip(skip).limit(limit).lean(),
       Delivery.countDocuments(filter),
     ]);
 
@@ -84,9 +85,7 @@ export class DeliveryRepository {
     return this.updateStatus(id, { status: 'dead', lastError });
   }
 
-  async incrementRetryCount(
-    id: string | mongoose.Types.ObjectId,
-  ): Promise<IDelivery | null> {
+  async incrementRetryCount(id: string | mongoose.Types.ObjectId): Promise<IDelivery | null> {
     return Delivery.findByIdAndUpdate(id, { $inc: { attempts: 1 } }, { new: true });
   }
 

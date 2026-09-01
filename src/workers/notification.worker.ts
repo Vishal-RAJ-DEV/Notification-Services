@@ -28,7 +28,7 @@ class NotificationWorker {
   constructor() {
     this.worker = new Worker<NotificationJobData>(
       QUEUE_NAMES.NOTIFICATION,
-      async (job) => {
+      (job) => {
         logger.info(
           { component: 'worker', jobId: job.id, attempt: job.attemptsMade },
           'Worker processing notification delivery job',
